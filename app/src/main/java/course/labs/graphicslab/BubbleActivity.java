@@ -130,12 +130,25 @@ public class BubbleActivity extends Activity
 					// TODO - Implement onFling actions.
 					// You can get all Views in mFrame using the
 					// ViewGroup.getChildCount() method
-
 					// Get the BubbleView from event1's coordinates
+					boolean found = false;
+					BubbleView bubble = null;
+					for (int i = 0; i < mFrame.getChildCount(); i++) {
+						bubble = (BubbleView) mFrame.getChildAt(i);
+						if (bubble.intersects(event1.getX(), event1.getY())) {
+							found = true;
+							break;
+						}
+					}
 
+					if (found) {
+						bubble.deflect(velocityX, velocityY);
+						Log.i(TAG, "deflecting bubble");
+						return true;
+					}
 
+					Log.i(TAG, "bubble not found");
 					return false;
-
 				}
 
 				// If a single tap intersects a BubbleView, then pop the BubbleView
@@ -150,8 +163,7 @@ public class BubbleActivity extends Activity
 					// ViewGroup.getChildCount() method
 					boolean found = false;
 					BubbleView bubble = null;
-					int i = 0;
-					for (i = 0; i < mFrame.getChildCount(); i++) {
+					for (int i = 0; i < mFrame.getChildCount(); i++) {
 						bubble = (BubbleView) mFrame.getChildAt(i);
 						if (bubble.intersects(event.getX(), event.getY())) {
 							found = true;
@@ -161,15 +173,17 @@ public class BubbleActivity extends Activity
 
 					if (found) {
 						// Pop the bubble
+						Log.i(TAG, "popping bubble");
 						bubble.stop(true);
 					} else {
 						// Create a bubble
+						Log.i(TAG, "creating bubble");
 						BubbleView newBubble = new BubbleView(getApplicationContext(), event.getX(), event.getY());
 						mFrame.addView(newBubble);
 						newBubble.start();
 					}
 
-					return false;
+					return true;
 				}
 			}
 		);
@@ -241,14 +255,10 @@ public class BubbleActivity extends Activity
 		private void setRotation(Random r)
 		{
 			if (speedMode == RANDOM) {
-
-				// TODO - set rotation in range [1..3]
-				mDRotate = 0;
-
-
+				// TODONE - set rotation in range [1..3]
+				mDRotate = r.nextInt(3) + 1;
 			} else {
 				mDRotate = 0;
-
 			}
 		}
 
@@ -307,7 +317,7 @@ public class BubbleActivity extends Activity
 				@Override
 				public void run()
 				{
-					Log.i(TAG, "start() --> run()");
+					//Log.i(TAG, "start() --> run()");
 
 					// TODONE - implement movement logic.
 					// Each time this method is run the BubbleView should
@@ -317,7 +327,7 @@ public class BubbleActivity extends Activity
 					if (!moveWhileOnScreen()) {
 						stop(false);
 					} else {
-						invalidate();
+						postInvalidate();
 					}
 				}
 			}, 0, REFRESH_RATE, TimeUnit.MILLISECONDS);
@@ -363,8 +373,7 @@ public class BubbleActivity extends Activity
 		}
 
 		// Change the Bubble's speed and direction
-		private synchronized void deflect(float velocityX, float velocityY)
-		{
+		private synchronized void deflect(float velocityX, float velocityY) {
 			//TODONE - set mDx and mDy to be the new velocities divided by the REFRESH_RATE
 			mDx = velocityX / REFRESH_RATE;
 			mDy = velocityY / REFRESH_RATE;
@@ -374,18 +383,18 @@ public class BubbleActivity extends Activity
 		@Override
 		protected synchronized void onDraw(Canvas canvas)
 		{
-			Log.i(TAG, "onDraw()");
+			//Log.i(TAG, "onDraw()");
 			super.onDraw(canvas);
 
 			// TODONE - save the canvas
 			canvas.save();
 
-			// TODO - increase the rotation of the original image by mDRotate
+			// TODONE - increase the rotation of the original image by mDRotate
+			mRotate += mDRotate;
 
-
-			// TODO Rotate the canvas by current rotation
+			// TODONE Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
-
+			canvas.rotate(mRotate, mXPos + (mScaledBitmapWidth / 2), mYPos + (mScaledBitmapWidth / 2));
 
 			// TODONE - draw the bitmap at its new location
 			canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
@@ -402,7 +411,7 @@ public class BubbleActivity extends Activity
 			mXPos += mDx;
 			mYPos += mDy;
 
-			Log.i(TAG, "Moved " + mDx + ", " + mDy);
+			//Log.i(TAG, "Moved " + mDx + ", " + mDy);
 
 			return !isOutOfView();
 		}
